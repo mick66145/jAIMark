@@ -19,17 +19,20 @@
                 padding: "5px 10px",
                 cursor: "pointer"
             },
-            onItemSelect: function (action) {
-                switch (action) {
-                    case "action1":
-                        alert("非台灣用語");
-                        break;
-                    case "action2":
-                        alert("非教育部名詞");
-                        break;
-                    default:
-                        alert("未知操作");
-                }
+            onItemSelect: (action, markedText) => {
+                const baseUri = 'http://sys-ai-mark-api.la.succ.work';
+                const uri = `${baseUri}/openapi/v1/mark`;
+                const data = {
+                    action,
+                    text: markedText
+                };
+                fetch(uri, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify(data)
+                });
             },
             highlight: true // Enable or disable text highlighting
         }, options);
@@ -41,7 +44,8 @@
             const $menuItem = $('<div class="menu-item"></div>').text(item.label).css(settings.itemStyle);
 
             $menuItem.on("click", function () {
-                settings.onItemSelect(item.action);
+                const markedText = $menu.data("markedText");
+                settings.onItemSelect(item.action, markedText);
                 $menu.hide();
             });
 
@@ -92,8 +96,12 @@
             const $element = $(this);
 
             $element.on("contextmenu", function (e) {
-                if ($(e.target).closest("mark").length > 0) {
+                const $mark = $(e.target).closest("mark");
+                if ($mark.length > 0) {
                     e.preventDefault();
+                    const markedText = $mark.text();
+                    $menu.data("markedText", markedText);
+
                     const menuWidth = $menu.outerWidth();
                     const menuHeight = $menu.outerHeight();
                     let posX = e.pageX;
