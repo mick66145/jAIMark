@@ -60,8 +60,39 @@
                 const $mark = $(e.target).closest("mark");
                 if ($mark.length > 0) {
                     e.preventDefault();
-                    const markedText = $mark.text();
-                    $menu.data("markedText", markedText);
+
+                    const getMarkedText = (mark) => {
+                        let mergedText = "";
+                        const visitedMarks = new Set();
+                        const mergeMarks = ($current, negative = 'next') => {
+                            if ($current.length > 0 && $current.prop("nodeName") === "MARK" && !visitedMarks.has($current[0])) {
+
+                                visitedMarks.add($current[0]);
+
+                                if (negative === 'next') {
+                                    mergedText += $current.text();
+                                } else {
+                                    mergedText = $current.text() + mergedText;
+                                }
+
+                                // 向前檢查
+                                const prev = $current[0].previousSibling;
+                                if (prev && prev.textContent === "" && prev.previousSibling?.nodeType === 1 && prev.previousSibling?.nodeName === "MARK") {
+                                    mergeMarks($(prev.previousSibling), 'prev');
+                                }
+
+                                // 向後檢查
+                                const next = $current[0].nextSibling;
+                                if (next && next.textContent === "" && next.nextSibling?.nodeType === 1 && next.nextSibling?.nodeName === "MARK") {
+                                    mergeMarks($(next.nextSibling), 'next');
+                                }
+                            }
+                        }
+
+                        mergeMarks(mark);
+                        return mergedText;
+                    }
+                    $menu.data("markedText", getMarkedText($mark).trim());
 
                     const menuWidth = $menu.outerWidth();
                     const menuHeight = $menu.outerHeight();

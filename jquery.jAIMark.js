@@ -19,38 +19,26 @@
                 padding: "5px 10px",
                 cursor: "pointer"
             },
-            onItemSelect: function (action) {
-                switch (action) {
-                    case "action1":
-                        alert("非台灣用語");
-                        break;
-                    case "action2":
-                        alert("非教育部名詞");
-                        break;
-                    default:
-                        alert("未知操作");
-                }
+            onItemSelect: (action, markedText) => {
+                const baseUri = 'http://sys-ai-mark-api.la.succ.work';
+                const uri = `${baseUri}/openapi/v1/mark`;
+                const data = {
+                    action,
+                    text: markedText
+                };
+                fetch(uri, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify(data)
+                });
             },
             highlight: true // Enable or disable text highlighting
         }, options);
 
         const $menu = $('<div class="custom-context-menu"></div>').css(settings.menuStyle).hide();
         $('body').append($menu);
-
-        $.each(settings.menuItems, function (index, item) {
-            const $menuItem = $('<div class="menu-item"></div>').text(item.label).css(settings.itemStyle);
-
-            $menuItem.on("click", function () {
-                settings.onItemSelect(item.action);
-                $menu.hide();
-            });
-
-            $menu.append($menuItem);
-        });
-
-        $(document).on("click", function () {
-            $menu.hide();
-        });
 
         const calculateRangeOffsets = (element, range) => {
             let offset = 0, startOffset = 0;
@@ -88,12 +76,63 @@
             }
         };
 
+        $.each(settings.menuItems, function (index, item) {
+            const $menuItem = $('<div class="menu-item"></div>').text(item.label).css(settings.itemStyle);
+
+            $menuItem.on("click", function () {
+                const markedText = $menu.data("markedText");
+                settings.onItemSelect(item.action, markedText);
+                $menu.hide();
+            });
+
+            $menu.append($menuItem);
+        });
+
+        $(document).on("click", function () {
+            $menu.hide();
+        });
+
         return this.each(function () {
             const $element = $(this);
 
             $element.on("contextmenu", function (e) {
-                if ($(e.target).closest("mark").length > 0) {
+                const $mark = $(e.target).closest("mark");
+                if ($mark.length > 0) {
                     e.preventDefault();
+
+                    const getMarkedText = (mark) => {
+                        let mergedText = "";
+                        const visitedMarks = new Set();
+                        const mergeMarks = ($current, negative = 'next') => {
+                            if ($current.length > 0 && $current.prop("nodeName") === "MARK" && !visitedMarks.has($current[0])) {
+
+                                visitedMarks.add($current[0]);
+
+                                if (negative === 'next') {
+                                    mergedText += $current.text();
+                                } else {
+                                    mergedText = $current.text() + mergedText;
+                                }
+
+                                // 向前檢查
+                                const prev = $current[0].previousSibling;
+                                if (prev && prev.textContent === "" && prev.previousSibling?.nodeType === 1 && prev.previousSibling?.nodeName === "MARK") {
+                                    mergeMarks($(prev.previousSibling), 'prev');
+                                }
+
+                                // 向後檢查
+                                const next = $current[0].nextSibling;
+                                if (next && next.textContent === "" && next.nextSibling?.nodeType === 1 && next.nextSibling?.nodeName === "MARK") {
+                                    mergeMarks($(next.nextSibling), 'next');
+                                }
+                            }
+                        }
+
+                        mergeMarks(mark);
+                        return mergedText;
+                    }
+                    $menu.data("markedText", getMarkedText($mark).trim());
+
                     const menuWidth = $menu.outerWidth();
                     const menuHeight = $menu.outerHeight();
                     let posX = e.pageX;
