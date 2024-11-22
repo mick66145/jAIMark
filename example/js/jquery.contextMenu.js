@@ -29,8 +29,12 @@
                         "Content-Type": "application/json"
                     },
                     body: JSON.stringify(data)
-                });
+                })
+                    .then(res => {
+                        settings.onItemSelectCallback()
+                    });
             },
+            onItemSelectCallback: () => { },
         }, options);
 
         const $menu = $('<div class="custom-context-menu"></div>').css(settings.menuStyle).hide();

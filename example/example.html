@@ -19,12 +19,17 @@
 
     <script>
 
-        //綁定標記工具
-        $("#text-container").aiMark({});
-
         //綁定table和取得標記資料
         const aiMarkTable = $("#table-container").aiMarkTable({})
         aiMarkTable.fetchData().then(() => aiMarkTable.generateTable());
+
+        //綁定標記工具
+        $("#text-container").aiMark({
+            onItemSelectCallback: () => {
+                aiMarkTable.fetchData().then(() => aiMarkTable.generateTable());
+            }
+        });
+
     </script>
 
 </body>

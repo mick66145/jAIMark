@@ -29,8 +29,12 @@
                         "Content-Type": "application/json"
                     },
                     body: JSON.stringify(data)
-                });
+                })
+                    .then(res => {
+                        settings.onItemSelectCallback()
+                    });
             },
+            onItemSelectCallback: () => { },
             highlight: true // Enable or disable text highlighting
         }, options);
 
@@ -191,6 +195,9 @@
             const tableContainer = this;
             if (tableContainer.length === 0) return;
 
+            const domElement = tableContainer[0];
+            domElement.innerHTML = '';
+
             const table = document.createElement('table');
             table.classList.add('ai-mark-table');
             table.style.border = '1px solid black';
@@ -221,10 +228,8 @@
                 table.appendChild(row);
             });
 
-            tableContainer.innerHTML = '';
-            tableContainer.append(table);
+            domElement.appendChild(table);
         };
-
 
         const reload = () => {
             return fetchData();
