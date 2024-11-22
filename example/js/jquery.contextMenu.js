@@ -3,8 +3,8 @@
     $.fn.contextMenu = function (options) {
         const settings = $.extend({
             menuItems: [
-                { label: "非台灣用語", action: "action1" },
-                { label: "非教育部名詞", action: "action2" },
+                { label: "非台灣用語", action: "non_taiwanese_terminology" },
+                { label: "非教育部名詞", action: "non_moe_terminology" },
             ],
             menuStyle: {
                 backgroundColor: "#fff",
@@ -19,13 +19,10 @@
                 padding: "5px 10px",
                 cursor: "pointer"
             },
-            onItemSelect: (action, markedText) => {
+            onItemSelect: ({ action, actionText, text }) => {
                 const baseUri = 'http://sys-ai-mark-api.la.succ.work';
                 const uri = `${baseUri}/openapi/v1/mark`;
-                const data = {
-                    action,
-                    text: markedText
-                };
+                const data = { action, actionText, text };
                 fetch(uri, {
                     method: "POST",
                     headers: {
@@ -44,7 +41,11 @@
 
             $menuItem.on("click", function () {
                 const markedText = $menu.data("markedText");
-                settings.onItemSelect(item.action, markedText);
+                settings.onItemSelect({
+                    action: item.action,
+                    actionText: item.action === 'non_taiwanese_terminology' ? '非台灣用語' : '非教育部名詞',
+                    text: markedText
+                });
                 $menu.hide();
             });
 
