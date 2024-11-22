@@ -20,7 +20,7 @@
                 cursor: "pointer"
             },
             onItemSelect: ({ action, actionText, text }) => {
-                const baseUri = 'http://sys-ai-mark-api.la.succ.work';
+                const baseUri = 'https://api-ai-mark.demo.mouth.team';
                 const uri = `${baseUri}/openapi/v1/mark`;
                 const data = { action, actionText, text };
                 fetch(uri, {
@@ -169,7 +169,7 @@
         let data = []
 
         const fetchData = () => {
-            const baseUri = 'http://sys-ai-mark-api.la.succ.work';
+            const baseUri = 'https://api-ai-mark.demo.mouth.team';
             const uri = `${baseUri}/openapi/v1/mark`;
 
             return fetch(uri, {
