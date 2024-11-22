@@ -159,6 +159,86 @@
         });
     };
 
+    $.fn.aiMarkTable = function (options) {
+
+        let data = []
+
+        const fetchData = () => {
+            const baseUri = 'http://sys-ai-mark-api.la.succ.work';
+            const uri = `${baseUri}/openapi/v1/mark`;
+
+            return fetch(uri, {
+                method: "GET",
+                headers: {
+                    "Content-Type": "application/json"
+                }
+            })
+                .then(res => res.json())
+                .then(res => res.data)
+                .then(res => {
+                    const { list } = res
+                    data = list
+                })
+        };
+
+        const getData = () => {
+            return data
+        };
+
+        const generateTable = () => {
+
+            const tableContainer = this;
+            if (tableContainer.length === 0) return;
+
+            const table = document.createElement('table');
+            table.classList.add('ai-mark-table');
+            table.style.border = '1px solid black';
+            table.style.borderCollapse = 'collapse';
+
+            const headerRow = document.createElement('tr');
+            if (data.length > 0) {
+                const headers = Object.keys(data[0]);
+                headers.forEach(header => {
+                    const th = document.createElement('th');
+                    th.textContent = header;
+                    th.style.border = '1px solid black';
+                    th.style.textAlign = 'center';
+                    headerRow.appendChild(th);
+                });
+                table.appendChild(headerRow);
+            }
+
+            data.forEach(item => {
+                const row = document.createElement('tr');
+                Object.values(item).forEach(value => {
+                    const td = document.createElement('td');
+                    td.textContent = value;
+                    td.style.border = '1px solid black';
+                    td.style.textAlign = 'center';
+                    row.appendChild(td);
+                });
+                table.appendChild(row);
+            });
+
+            tableContainer.innerHTML = '';
+            tableContainer.append(table);
+        };
+
+
+        const reload = () => {
+            return fetchData();
+        };
+
+        return {
+            data,
+            fetchData,
+            getData,
+            reload,
+            generateTable
+        };
+    };
+
+
 
 })(jQuery);
 

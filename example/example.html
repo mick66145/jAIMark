@@ -13,8 +13,18 @@
         <p>畢氏定理解釋了直角三角形中兩股與斜邊的平方關係</p>
     </div>
 
+    <div id="table-container">
+
+    </div>
+
     <script>
+
+        //綁定標記工具
         $("#text-container").aiMark({});
+
+        //綁定table和取得標記資料
+        const aiMarkTable = $("#table-container").aiMarkTable({})
+        aiMarkTable.fetchData().then(() => aiMarkTable.generateTable());
     </script>
 
 </body>
